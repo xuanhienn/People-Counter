@@ -16,7 +16,7 @@ state =0
 #cap = cv2.VideoCapture(0)
 cap = cv2.VideoCapture("test_1.mp4")
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output1.mp4',fourcc, 20.0, (640,480))
+# out = cv2.VideoWriter('output1.mp4',fourcc, 20.0, (640,480))
 
 
 
