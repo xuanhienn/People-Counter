@@ -197,7 +197,7 @@ while (cap.isOpened()):
     cv2.putText(frame, str_down, (10, 90), font, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
     cv2.putText(frame, str_down, (10, 90), font, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
     out.write(frame)
-    cv2.imshow('Frame', frame)
+    # cv2.imshow('Frame', frame)
 
     # Press ESC to exit
     k = cv2.waitKey(30) & 0xff
