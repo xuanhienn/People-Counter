@@ -274,8 +274,8 @@ while(cap.isOpened()):
     #cv2.putText(frame, "MechatronicsLAB.net",(300,200),font,1,(255,0,0),2)
 
     
-    out.write(frame)
-    cv2.imshow('Contour (Step6)',frame)
+    # out.write(frame)
+    # cv2.imshow('Contour (Step6)',frame)
     # cv2.imshow('Mask',mask)
     # cv2.imshow('Original (Step1)', frame_cp)
     # cv2.imshow('BgFg (Step2)',fgmask_cp)
