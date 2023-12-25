@@ -16,7 +16,7 @@ state =0
 #cap = cv2.VideoCapture(0)
 cap = cv2.VideoCapture("test_1.mp4")
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output2.mkv',fourcc, 20.0, (640,480))
+out = cv2.VideoWriter('output1.mp4',fourcc, 20.0, (640,480))
 
 
 
@@ -24,8 +24,8 @@ out = cv2.VideoWriter('output2.mkv',fourcc, 20.0, (640,480))
 ##cap.set(4,120) #Height
 
 #Print the capture properties to console
-for i in range(19):
-    print (i, cap.get(i))
+# for i in range(19):
+    # print (i, cap.get(i))
 
 w = cap.get(3)
 h = cap.get(4)
@@ -66,9 +66,11 @@ pts_L4 = pts_L4.reshape((-1,1,2))
 fgbg = cv2.createBackgroundSubtractorMOG2(detectShadows = True)
 
 #Structuring elements for morphographic filters
-kernelOp = np.ones((3,3),np.uint8)
-kernelOp2 = np.ones((5,5),np.uint8)
-kernelCl = np.ones((11,11),np.uint8)
+kernelCl2 = np.ones((3, 3), np.uint8)
+kernelOp = np.ones((7, 7), np.uint8)
+kernelCl = np.ones((17, 17), np.uint8)
+kernelOp2 = np.ones((17, 17), np.uint8)
+kernelCl3 = np.ones((8, 8), np.uint8)
 
 #Variables
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -93,20 +95,26 @@ while(cap.isOpened()):
     #Apply background subtraction
     fgmask = fgbg.apply(frame)
     # fgmask_cp = fgmask.copy()
-    #fgmask2 = fgbg.apply(frame)
+    fgmask2 = fgbg.apply(frame)
 
     #Binarization to eliminate shadows
     try:
-        ret,imBin= cv2.threshold(fgmask,200,255,cv2.THRESH_BINARY)
-        #ret,imBin2 = cv2.threshold(fgmask2,200,255,cv2.THRESH_BINARY)
-        #Opening (erode->dilate) to remove noise.
+        ret, imBin = cv2.threshold(fgmask, 127, 255, cv2.THRESH_BINARY)
+        ret, imBin2 = cv2.threshold(fgmask2, 127, 255, cv2.THRESH_BINARY)
+
+        imBin = cv2.morphologyEx(imBin, cv2.MORPH_CLOSE, kernelCl2)
+        imBin2 = cv2.morphologyEx(imBin2, cv2.MORPH_CLOSE, kernelCl2)
+        # Opening (erode->dilate) to remove noise.
         mask = cv2.morphologyEx(imBin, cv2.MORPH_OPEN, kernelOp)
-        # Opening = mask.copy()
-        #mask2 = cv2.morphologyEx(imBin2, cv2.MORPH_OPEN, kernelOp)
-        #Closing (dilate -> erode) to join white regions.
-        mask =  cv2.morphologyEx(mask , cv2.MORPH_CLOSE, kernelCl)
-        # Closing = mask.copy()
-        #mask2 = cv2.morphologyEx(mask2, cv2.MORPH_CLOSE, kernelCl)
+        mask2 = cv2.morphologyEx(imBin2, cv2.MORPH_OPEN, kernelOp)
+
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernelCl)
+        mask2 = cv2.morphologyEx(mask2, cv2.MORPH_CLOSE, kernelCl)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernelOp2)
+        mask2 = cv2.morphologyEx(mask2, cv2.MORPH_OPEN, kernelOp2)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernelCl3)
+        mask2 = cv2.morphologyEx(mask2, cv2.MORPH_CLOSE, kernelCl3)
+
     except:
         print('EOF')
         print ('UP:',cnt_up+count_up)
@@ -161,17 +169,17 @@ while(cap.isOpened()):
                         new = False
                         i.updateCoords(cx,cy)   #update coordinates in the object and resets age
                         if i.going_UP(line_down,line_up) == True:
-                            if w > 100:
-                                count_up = w//60
-                                #cnt_up += count_up
+                            if w > 80:
+                                count_up = w/40
+                                cnt_up += count_up
                                 print ()
                             else:    
                                 cnt_up += 1;
                             print ("ID:",i.getId(),'crossed going up at',time.strftime("%c"))
                         elif i.going_DOWN(line_down,line_up) == True:
-                            if w > 100:
-                                count_down = w//60
-                                #cnt_down += count_down
+                            if w > 80:
+                                count_down = w/40
+                                cnt_down += count_down
                             else:
                                 cnt_down += 1;
                             print ("ID:",i.getId(),'crossed going down at',time.strftime("%c"))
