@@ -16,7 +16,7 @@ state =0
 #cap = cv2.VideoCapture(0)
 cap = cv2.VideoCapture("test_1.mp4")
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output1.mkv',fourcc, 20.0, (640,480))
+out = cv2.VideoWriter('output2.mkv',fourcc, 20.0, (640,480))
 
 
 
@@ -40,8 +40,8 @@ line_down   = int(4*(h/5))
 up_limit =   int(.5*(h/5))
 down_limit = int(4.5*(h/5))
 
-print ("Red line y:",str(line_down))
-print ("Blue line y:", str(line_up))
+# print ("Red line y:",str(line_down))
+# print ("Blue line y:", str(line_up))
 line_down_color = (255,0,0)
 line_up_color = (0,0,255)
 pt1 =  [0, line_down];
@@ -82,6 +82,7 @@ while(cap.isOpened()):
 ##for image in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     
     ret, frame = cap.read()
+    # frame_cp = frame.copy()
 ##    frame = image.array
 
     # for i in persons:
@@ -91,18 +92,21 @@ while(cap.isOpened()):
     
     #Apply background subtraction
     fgmask = fgbg.apply(frame)
-    fgmask2 = fgbg.apply(frame)
+    # fgmask_cp = fgmask.copy()
+    #fgmask2 = fgbg.apply(frame)
 
     #Binarization to eliminate shadows
     try:
         ret,imBin= cv2.threshold(fgmask,200,255,cv2.THRESH_BINARY)
-        ret,imBin2 = cv2.threshold(fgmask2,200,255,cv2.THRESH_BINARY)
+        #ret,imBin2 = cv2.threshold(fgmask2,200,255,cv2.THRESH_BINARY)
         #Opening (erode->dilate) to remove noise.
         mask = cv2.morphologyEx(imBin, cv2.MORPH_OPEN, kernelOp)
-        mask2 = cv2.morphologyEx(imBin2, cv2.MORPH_OPEN, kernelOp)
+        # Opening = mask.copy()
+        #mask2 = cv2.morphologyEx(imBin2, cv2.MORPH_OPEN, kernelOp)
         #Closing (dilate -> erode) to join white regions.
         mask =  cv2.morphologyEx(mask , cv2.MORPH_CLOSE, kernelCl)
-        mask2 = cv2.morphologyEx(mask2, cv2.MORPH_CLOSE, kernelCl)
+        # Closing = mask.copy()
+        #mask2 = cv2.morphologyEx(mask2, cv2.MORPH_CLOSE, kernelCl)
     except:
         print('EOF')
         print ('UP:',cnt_up+count_up)
@@ -113,24 +117,27 @@ while(cap.isOpened()):
     #################
     
     # RETR_EXTERNAL returns only extreme outer flags. All child contours are left behind.
-    contours0, hierarchy = cv2.findContours(mask2,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    contours0, hierarchy = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+
     for cnt in contours0:
         rect = cv2.boundingRect(cnt)
-        # print rect_co
-        # if rect[2] > 100: 
+        #######################################
+        # print( rect_co)
+        # if rect[2] > 100:
         #     if rect[1]!=0:
         #         rect_co.append(rect[1])
         #     if len(rect_co)>=2:
         #         if (rect_co[-1]-rect_co[-2]) > 0:
         #             count_down = rect[2]/60
         #             count_up = 0
-        #             print 'down' ,count_down
+        #             print ('down' ,count_down)
         #         elif (rect_co[-1]-rect_co[-2]) < 0:
         #             count_up =  rect[2]/60
         #             count_down = 0
-        #             print 'up',count_up
-                
+        #             print ('up',count_up)
+        #
         #     continue
+        #######################################
         area = cv2.contourArea(cnt)
         if area > areaTH:
             #################
@@ -155,7 +162,7 @@ while(cap.isOpened()):
                         i.updateCoords(cx,cy)   #update coordinates in the object and resets age
                         if i.going_UP(line_down,line_up) == True:
                             if w > 100:
-                                count_up = w/60
+                                count_up = w//60
                                 #cnt_up += count_up
                                 print ()
                             else:    
@@ -163,7 +170,7 @@ while(cap.isOpened()):
                             print ("ID:",i.getId(),'crossed going up at',time.strftime("%c"))
                         elif i.going_DOWN(line_down,line_up) == True:
                             if w > 100:
-                                count_down = w/60
+                                count_down = w//60
                                 #cnt_down += count_down
                             else:
                                 cnt_down += 1;
@@ -230,7 +237,8 @@ while(cap.isOpened()):
             #################
             cv2.circle(frame,(cx,cy), 5, (0,0,255), -1)
             img = cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)            
-            #cv2.drawContours(frame, cnt, -1, (0,255,0), 3)
+            cv2.drawContours(frame, cnt, -1, (0,255,0), 3)
+            # cv2.drawContours(Closing, cnt,-1,255,2)
             
     #END for cnt in contours0
             
@@ -267,9 +275,13 @@ while(cap.isOpened()):
 
     
     out.write(frame)
-    # cv2.imshow('Frame',frame)
-    #cv2.imshow('Mask',mask)    
-    
+    cv2.imshow('Contour (Step6)',frame)
+    # cv2.imshow('Mask',mask)
+    # cv2.imshow('Original (Step1)', frame_cp)
+    # cv2.imshow('BgFg (Step2)',fgmask_cp)
+    # cv2.imshow('Imbin (Step3)', imBin)
+    # cv2.imshow('Opening (Step4)', Opening)
+    # cv2.imshow('Closing (Step5)', Closing)
     #Press ESC to exit
     k = cv2.waitKey(30) & 0xff
     if k == 27:
